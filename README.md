@@ -13,12 +13,18 @@ To start Metro, run the following command from the _root_ of your React Native p
 ```bash
 # using npm
 npm start
+if you have react-native cli in your PC
+react-native start
 
 # OR using Yarn
 yarn start
 ```
 
-## Step 2: Start your Application
+## Step 2: Start your Backend Server
+
+For more information please visit https://github.com/efemazlumoglu/martaBE.git this repository to see further information.
+
+## Step 3: Start your Application
 
 Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
 
@@ -27,6 +33,8 @@ Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _roo
 ```bash
 # using npm
 npm run android
+if you have react-native cli in your PC
+react-native run-android
 
 # OR using Yarn
 yarn android
@@ -37,6 +45,8 @@ yarn android
 ```bash
 # using npm
 npm run ios
+if you have react-native cli in your PC
+react-native run-ios or react-native run-ios --simulator="iPhone 15" // or whatever simulator you would like to run your app
 
 # OR using Yarn
 yarn ios
@@ -46,7 +56,7 @@ If everything is set up _correctly_, you should see your new app running in your
 
 This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
 
-## Step 3: Modifying your App
+## Step 4: Modifying your App
 
 Now that you have successfully run the app, let's modify it.
 
