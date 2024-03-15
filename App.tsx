@@ -11,6 +11,7 @@ import {AuthContext} from './src/context/AuthContext';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
 import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
 
 function App(): React.JSX.Element {
   const {currentUser} = useContext(AuthContext);
@@ -25,7 +26,7 @@ function App(): React.JSX.Element {
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
-            {/* <Stack.Screen name="Register" component={RegisterScreen} /> */}
+            <Stack.Screen name="Register" component={RegisterScreen} />
           </>
         )}
       </Stack.Navigator>

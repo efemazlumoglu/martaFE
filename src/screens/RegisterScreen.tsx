@@ -8,19 +8,25 @@ import {
   Alert,
 } from 'react-native';
 import {auth} from '../libs/firebase';
-import {signInWithEmailAndPassword, signOut} from 'firebase/auth';
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import {FirebaseError} from 'firebase/app';
 import {AuthContext} from '../context/AuthContext';
 
-const Login = ({navigation}) => {
+const RegisterScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setConfirmShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmShowPassword(!showConfirmPassword);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
@@ -50,7 +56,7 @@ const Login = ({navigation}) => {
     // return <Navigate to="" />;
   }
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     if (!isEmailValid(email)) {
       setEmailError('Invalid email');
       return;
@@ -66,18 +72,28 @@ const Login = ({navigation}) => {
       setPasswordError('');
     }
 
+    if (password !== confirmPassword) {
+      setPasswordError('Passwords should match with each other');
+      return;
+    } else {
+      setPasswordError('');
+    }
+
     try {
       await signOut(auth);
       setIsLoading(true);
       setErrHandler({isError: false, errorMsg: ''});
-      const userCredential = await signInWithEmailAndPassword(
+      const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password,
       );
       if (userCredential.user) {
+        console.log(userCredential.user);
         setIsLoading(false);
-        //TODO: store the uid of user for upcoming transactions
+        console.log('Register Success');
+        Alert.alert('Register Success', 'Please Login');
+        navigation.navigate('Login');
       }
     } catch (error: unknown) {
       const err = error as FirebaseError;
@@ -87,7 +103,7 @@ const Login = ({navigation}) => {
         errorMsg: FIREBASE_ERRORS[err.code as keyof typeof FIREBASE_ERRORS],
       });
       Alert.alert(
-        'Login Failed',
+        'Register Failed',
         FIREBASE_ERRORS[err.code as keyof typeof FIREBASE_ERRORS],
       );
     } finally {
@@ -124,6 +140,21 @@ const Login = ({navigation}) => {
       {passwordError ? (
         <Text style={styles.errorText}>{passwordError}</Text>
       ) : null}
+      <Text style={styles.label}>Confirm Password</Text>
+      <View style={styles.passwordInputContainer}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Confirm your password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={!showConfirmPassword}
+        />
+        <TouchableOpacity
+          onPress={toggleConfirmPasswordVisibility}
+          style={styles.eyeIcon}>
+          <Text>{showConfirmPassword ? '👁️' : '👁️‍🗨️'}</Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity
         style={[
           styles.button,
@@ -136,16 +167,16 @@ const Login = ({navigation}) => {
           },
         ]}
         disabled={!isEmailValid(email) || password.length < 8}
-        onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+        onPress={handleRegister}>
+        <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
       <Text style={styles.warningText}>
         Please enter a valid email and password should be at least 8 characters.
       </Text>
       <View style={styles.registerContainer}>
-        <Text style={styles.registerText}>Don't you have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-          <Text style={styles.registerText}>Register</Text>
+        <Text style={styles.registerText}>Do you have an account? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.registerText}>Login</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -213,4 +244,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Login;
+export default RegisterScreen;
