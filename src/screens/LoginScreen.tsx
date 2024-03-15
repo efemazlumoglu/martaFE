@@ -11,6 +11,7 @@ import {auth} from '../libs/firebase';
 import {signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import {FirebaseError} from 'firebase/app';
 import {AuthContext} from '../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -25,7 +26,6 @@ const Login = ({navigation}) => {
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const isEmailValid = (email: string) => {
-    // Simple email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
@@ -45,9 +45,25 @@ const Login = ({navigation}) => {
     'auth/invalid-credential': 'Invalid credentials please register',
   };
 
+  const getItemFromStorage = async () => {
+    try {
+      const uid = await AsyncStorage.getItem('uid');
+      if (uid !== null) {
+        console.log('UID retrieved:', uid);
+        navigation.navigate('TaskList');
+      } else {
+        console.log('No UID found in AsyncStorage');
+      }
+    } catch (error) {
+      console.error('Error retrieving data from async storage');
+    }
+  };
+
   const {currentUser} = useContext(AuthContext);
   if (currentUser) {
-    // return <Navigate to="" />;
+    navigation.navigate('TaskList');
+  } else {
+    getItemFromStorage();
   }
 
   const handleLogin = async () => {
@@ -58,9 +74,8 @@ const Login = ({navigation}) => {
       setEmailError('');
     }
 
-    // Validate password
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters long');
+    if (password.length < 8) {
+      setPasswordError('Password must be at least 8 characters long');
       return;
     } else {
       setPasswordError('');
@@ -77,7 +92,10 @@ const Login = ({navigation}) => {
       );
       if (userCredential.user) {
         setIsLoading(false);
-        //TODO: store the uid of user for upcoming transactions
+        const uid = userCredential.user.uid;
+        await AsyncStorage.setItem('uid', uid);
+        console.log('User signed in:', uid);
+        navigation.navigate('TaskList');
       }
     } catch (error: unknown) {
       const err = error as FirebaseError;
@@ -130,7 +148,7 @@ const Login = ({navigation}) => {
           // eslint-disable-next-line react-native/no-inline-styles
           {
             backgroundColor:
-              isEmailValid(email) && password.length >= 6
+              isEmailValid(email) && password.length >= 8
                 ? '#4CAF50'
                 : '#CCCCCC',
           },

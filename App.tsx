@@ -5,24 +5,62 @@
  * @format
  */
 
-import React, {useContext} from 'react';
-import {Text} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
 import {AuthContext} from './src/context/AuthContext';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
+import TaskListScreen from './src/screens/TaskListScreen';
+import {Text, TouchableOpacity} from 'react-native';
+import AddTaskScreen from './src/screens/AddTaskScreen';
 
-function App(): React.JSX.Element {
+function App({navigation}): React.JSX.Element {
+  const [user, setUser] = useState(false);
+  const getItemFromStorage = async () => {
+    try {
+      const uid = await AsyncStorage.getItem('uid');
+      if (uid !== null) {
+        console.log('UID retrieved:', uid);
+        setUser(true);
+      } else {
+        console.log('No UID found in AsyncStorage');
+        setUser(false);
+      }
+    } catch (error) {
+      console.error('Error retrieving data from async storage');
+      setUser(false);
+    }
+  };
+  useEffect(() => {
+    getItemFromStorage();
+  });
+
   const {currentUser} = useContext(AuthContext);
   const Stack = createNativeStackNavigator();
-
+  console.log('current user: ', currentUser);
+  console.log(user);
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {currentUser ? (
-          // <Stack.Screen name="MainStack" component={MainStack} />
-          <Text>There is no user</Text>
+        {user ? (
+          <>
+            <Stack.Screen
+              name="TaskList"
+              component={TaskListScreen}
+              options={{
+                title: 'Task List',
+              }}
+            />
+            <Stack.Screen
+              name="AddTask"
+              component={AddTaskScreen}
+              options={{
+                title: 'Add Task',
+              }}
+            />
+          </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
@@ -35,4 +73,3 @@ function App(): React.JSX.Element {
 }
 
 export default App;
-

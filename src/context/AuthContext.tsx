@@ -13,21 +13,20 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
-      if (user?.emailVerified) {
+      if (user) {
+        console.log(user);
         setCurrentUser(user);
       } else {
+        console.log('user is coming null');
         setCurrentUser(null);
       }
     });
-
     return () => {
       unsubscribe();
     };
   }, []);
-
   return (
     <AuthContext.Provider value={{currentUser}}>
       {children}

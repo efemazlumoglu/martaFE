@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import {auth} from '../libs/firebase';
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut} from 'firebase/auth';
+import {createUserWithEmailAndPassword, signOut} from 'firebase/auth';
 import {FirebaseError} from 'firebase/app';
 import {AuthContext} from '../context/AuthContext';
 
@@ -31,7 +31,6 @@ const RegisterScreen = ({navigation}) => {
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const isEmailValid = (email: string) => {
-    // Simple email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
@@ -53,7 +52,7 @@ const RegisterScreen = ({navigation}) => {
 
   const {currentUser} = useContext(AuthContext);
   if (currentUser) {
-    // return <Navigate to="" />;
+    navigation.navigate('TaskList');
   }
 
   const handleRegister = async () => {
@@ -64,9 +63,8 @@ const RegisterScreen = ({navigation}) => {
       setEmailError('');
     }
 
-    // Validate password
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters long');
+    if (password.length < 8) {
+      setPasswordError('Password must be at least 8 characters long');
       return;
     } else {
       setPasswordError('');
@@ -161,7 +159,7 @@ const RegisterScreen = ({navigation}) => {
           // eslint-disable-next-line react-native/no-inline-styles
           {
             backgroundColor:
-              isEmailValid(email) && password.length >= 6
+              isEmailValid(email) && password.length >= 8
                 ? '#4CAF50'
                 : '#CCCCCC',
           },
