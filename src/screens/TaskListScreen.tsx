@@ -1,12 +1,19 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, FlatList, StyleSheet, RefreshControl} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  RefreshControl,
+  TouchableOpacity,
+} from 'react-native';
 import {FAB} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {Swipeable} from 'react-native-gesture-handler';
 import {formatDate} from '../libs/formatDate';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import AddBoxIcon from '@mui/icons-material/AddBox';
+import {useFocusEffect} from '@react-navigation/native';
 
 const TaskListScreen = ({navigation}) => {
   const [userId, setUserId] = useState('');
@@ -37,6 +44,23 @@ const TaskListScreen = ({navigation}) => {
     if (userId && !tasksFetched) {
       fetchTasks();
     }
+  });
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (userId && !tasksFetched) {
+        fetchTasks();
+      }
+      return () => {};
+    }, []),
+  );
+
+  useEffect(() => {
+    navigation.addListener('focus', () => {
+      if (userId && !tasksFetched) {
+        fetchTasks();
+      }
+    });
   });
 
   const fetchTasks = async () => {
@@ -83,11 +107,23 @@ const TaskListScreen = ({navigation}) => {
     //   );
     // };
     return (
-      <View style={styles.taskItem}>
-        <Text style={styles.taskName}>{item.taskName}</Text>
-        <Text style={styles.taskName}>{item.taskPriority}</Text>
-        <Text style={styles.taskName}>{formatDate(item.taskDate)}</Text>
-      </View>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('AddTask', {
+            isUpdate: true,
+            taskN: item.taskName,
+            taskId: item.taskId,
+            taskDesc: item.taskDesc,
+            taskPrio: item.taskPriority,
+            taskDueDate: item.taskDate,
+          })
+        }>
+        <View style={styles.taskItem}>
+          <Text style={styles.taskName}>{item.taskName}</Text>
+          <Text style={styles.taskName}>{item.taskPriority}</Text>
+          <Text style={styles.taskName}>{formatDate(item.taskDate)}</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -103,6 +139,11 @@ const TaskListScreen = ({navigation}) => {
     } else {
       return null;
     }
+  };
+
+  const handleNavigation = () => {
+    setTasksFetched(false);
+    navigation.navigate('AddTask', {isUpdate: false});
   };
 
   return (
@@ -124,7 +165,7 @@ const TaskListScreen = ({navigation}) => {
         icon={({color, size}) => (
           <MaterialIcon name="add" color={color} size={size} />
         )}
-        onPress={() => navigation.navigate('AddTask')}
+        onPress={() => handleNavigation}
       />
     </View>
   );

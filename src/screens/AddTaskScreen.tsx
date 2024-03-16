@@ -13,8 +13,12 @@ import {formatDate} from '../libs/formatDate';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {uuidv4} from '@firebase/util';
+import {useRoute} from '@react-navigation/native';
 
 const AddTaskScreen = ({navigation}) => {
+  const route = useRoute();
+  const {isUpdate, taskId, taskN, taskDesc, taskPrio, taskDueDate} =
+    route.params;
   const [taskName, setTaskName] = useState<string>('');
   const [userId, setUserId] = useState('');
   const [taskDescription, setTaskDescription] = useState<string>('');
@@ -24,6 +28,21 @@ const AddTaskScreen = ({navigation}) => {
     useState<boolean>(false);
 
   useEffect(() => {
+    if (isUpdate && taskN) {
+      setTaskName(taskN);
+      if (taskDesc) {
+        setTaskDescription(taskDesc);
+      }
+      if (taskPrio) {
+        setTaskPriority(taskPrio);
+      }
+      if (taskDueDate) {
+        setDueDate(new Date(taskDueDate));
+      }
+    }
+    navigation.setOptions({
+      title: isUpdate ? 'Update Task' : 'Add New Task',
+    });
     const fetchUserId = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem('uid');
@@ -72,26 +91,48 @@ const AddTaskScreen = ({navigation}) => {
       );
       return;
     }
+    if (isUpdate) {
+      try {
+        const taskData = {
+          taskName: taskName,
+          taskId: generateUniqueId(),
+          taskDate: dueDate,
+          taskDesc: taskDescription,
+          taskPriority: taskPriority,
+        };
 
-    try {
-      const taskData = {
-        taskName: taskName,
-        taskId: generateUniqueId(),
-        taskDate: dueDate,
-        taskDesc: taskDescription,
-        taskPriority: taskPriority,
-      };
+        const response = await axios.put(
+          `http://localhost:3000/tasks/${userId}/${taskId}`,
+          taskData,
+        );
+        console.log('Task added successfully:', response.data);
+        navigation.popToTop();
+        return response.data;
+      } catch (error) {
+        console.error('Error adding task:', error.message);
+        throw error;
+      }
+    } else {
+      try {
+        const taskData = {
+          taskName: taskName,
+          taskId: generateUniqueId(),
+          taskDate: dueDate,
+          taskDesc: taskDescription,
+          taskPriority: taskPriority,
+        };
 
-      const response = await axios.post(
-        `http://localhost:3000/tasks/${userId}`,
-        taskData,
-      );
-      console.log('Task added successfully:', response.data);
-      navigation.popToTop();
-      return response.data;
-    } catch (error) {
-      console.error('Error adding task:', error.message);
-      throw error;
+        const response = await axios.post(
+          `http://localhost:3000/tasks/${userId}`,
+          taskData,
+        );
+        console.log('Task added successfully:', response.data);
+        navigation.popToTop();
+        return response.data;
+      } catch (error) {
+        console.error('Error adding task:', error.message);
+        throw error;
+      }
     }
   };
 
@@ -130,12 +171,15 @@ const AddTaskScreen = ({navigation}) => {
           setDatePickerVisibility(false);
           setDueDate(date);
         }}
+        minimumDate={dueDate}
         onCancel={() => {
           setDatePickerVisibility(false);
         }}
       />
       <TouchableOpacity style={styles.button} onPress={() => handleAddTask()}>
-        <Text style={styles.buttonText}>Add Task</Text>
+        <Text style={styles.buttonText}>
+          {!isUpdate ? 'Add Task' : 'Update Task'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
