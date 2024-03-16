@@ -107,7 +107,7 @@ const AddTaskScreen = ({navigation}) => {
       try {
         const taskData = {
           taskName: taskName,
-          taskId: generateUniqueId(),
+          taskId: taskId,
           taskDate: dueDate,
           taskDesc: taskDescription,
           taskPriority: taskPriority,
