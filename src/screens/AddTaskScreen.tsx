@@ -18,8 +18,15 @@ import CheckBox from '@react-native-community/checkbox';
 
 const AddTaskScreen = ({navigation}) => {
   const route = useRoute();
-  const {isUpdate, taskId, taskN, taskDesc, taskPrio, taskDueDate, taskCompleted} =
-    route.params;
+  const {
+    isUpdate,
+    taskId,
+    taskN,
+    taskDesc,
+    taskPrio,
+    taskDueDate,
+    taskCompleted,
+  } = route.params;
   const [isChecked, setIsChecked] = useState(false);
   const [taskName, setTaskName] = useState<string>('');
   const [userId, setUserId] = useState('');
@@ -148,6 +155,17 @@ const AddTaskScreen = ({navigation}) => {
   };
 
   const handleDeleteTask = async () => {
+    Alert.alert('Are you sure ?', 'You are going to delete your task.', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel Pressed'),
+        style: 'cancel',
+      },
+      {text: 'OK', onPress: () => handleDeleteOperation()},
+    ]);
+  };
+
+  const handleDeleteOperation = async () => {
     if (isUpdate) {
       try {
         const response = await axios.delete(
@@ -221,11 +239,15 @@ const AddTaskScreen = ({navigation}) => {
           {!isUpdate ? 'Add Task' : 'Update Task'}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => handleDeleteTask()}>
-        <Text style={styles.buttonText}>Delete Task</Text>
-      </TouchableOpacity>
+      {isUpdate ? (
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDeleteTask()}>
+          <Text style={styles.buttonText}>Delete Task</Text>
+        </TouchableOpacity>
+      ) : (
+        <></>
+      )}
     </View>
   );
 };
