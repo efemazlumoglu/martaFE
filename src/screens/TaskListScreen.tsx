@@ -6,8 +6,10 @@ import {
   StyleSheet,
   RefreshControl,
   TouchableOpacity,
+  Button,
 } from 'react-native';
 import {FAB} from 'react-native-paper';
+import ActionSheet from 'react-native-action-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {Swipeable} from 'react-native-gesture-handler';
@@ -98,6 +100,61 @@ const TaskListScreen = ({navigation}) => {
     fetchTasks();
   };
 
+  const handleSortOption = index => {
+    let sortedTasks = [...tasks];
+    switch (index) {
+      case 0:
+        sortedTasks.sort((a, b) => {
+          if (a.taskPriority < b.taskPriority) {
+            return -1;
+          }
+          if (a.taskPriority > b.taskPriority) {
+            return 1;
+          }
+          return 0;
+        });
+        break;
+      case 1:
+        sortedTasks.sort((a, b) => {
+          if (a.taskCompleted && !b.taskCompleted) {
+            return 1;
+          }
+          if (!a.taskCompleted && b.taskCompleted) {
+            return -1;
+          }
+          return 0;
+        });
+        break;
+      case 2:
+        sortedTasks.sort((a, b) => {
+          const dateA = new Date(a.taskDate);
+          const dateB = new Date(b.taskDate);
+          return dateA - dateB;
+        });
+        break;
+      default:
+        break;
+    }
+    setTasks(sortedTasks);
+  };
+
+  const showActionSheet = () => {
+    const options = ['Priority', 'Completed', 'Due Date'];
+    const cancelButtonIndex = options.length;
+
+    ActionSheet.showActionSheetWithOptions(
+      {
+        options: [...options, 'Cancel'],
+        cancelButtonIndex,
+      },
+      buttonIndex => {
+        if (buttonIndex !== cancelButtonIndex) {
+          handleSortOption(buttonIndex);
+        }
+      },
+    );
+  };
+
   const renderTaskItem = ({item}) => {
     // const renderRightActions = () => {
     //   return (
@@ -149,6 +206,7 @@ const TaskListScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
+      <Button title="Sort" onPress={showActionSheet} />
       <FlatList
         data={tasks}
         renderItem={renderTaskItem}

@@ -147,6 +147,22 @@ const AddTaskScreen = ({navigation}) => {
     setIsChecked(!isChecked);
   };
 
+  const handleDeleteTask = async () => {
+    if (isUpdate) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:3000/tasks/${userId}/${taskId}`,
+        );
+        console.log('Task deleted successfully:', response.data);
+        navigation.popToTop();
+        return response.data;
+      } catch (error) {
+        console.error('Error adding task:', error.message);
+        throw error;
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -193,7 +209,7 @@ const AddTaskScreen = ({navigation}) => {
             style={styles.check}
             disabled={false}
             value={isChecked}
-            onValueChange={newValue => setIsChecked(newValue)}
+            onValueChange={handleToggleCheckbox}
           />
           <Text style={styles.label}>Task Completed</Text>
         </View>
@@ -204,6 +220,11 @@ const AddTaskScreen = ({navigation}) => {
         <Text style={styles.buttonText}>
           {!isUpdate ? 'Add Task' : 'Update Task'}
         </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => handleDeleteTask()}>
+        <Text style={styles.buttonText}>Delete Task</Text>
       </TouchableOpacity>
     </View>
   );
@@ -241,6 +262,13 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#4CAF50',
     paddingVertical: 12,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  deleteButton: {
+    backgroundColor: '#FF0000',
+    paddingVertical: 12,
+    marginTop: 10,
     borderRadius: 5,
     alignItems: 'center',
   },
