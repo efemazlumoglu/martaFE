@@ -5,6 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {Swipeable} from 'react-native-gesture-handler';
 import {formatDate} from '../libs/formatDate';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import AddBoxIcon from '@mui/icons-material/AddBox';
 
 const TaskListScreen = ({navigation}) => {
   const [userId, setUserId] = useState('');
@@ -42,7 +44,6 @@ const TaskListScreen = ({navigation}) => {
     try {
       const response = await axios.get(`http://localhost:3000/tasks/${userId}`);
       const data = response.data;
-      console.log('adding task into firebase');
       if (data) {
         const tasksArray = Object.keys(data).map(key => ({
           ...data[key],
@@ -119,7 +120,10 @@ const TaskListScreen = ({navigation}) => {
       />
       <FAB
         style={styles.fab}
-        icon="plus-box"
+        // eslint-disable-next-line react/no-unstable-nested-components
+        icon={({color, size}) => (
+          <MaterialIcon name="add" color={color} size={size} />
+        )}
         onPress={() => navigation.navigate('AddTask')}
       />
     </View>
@@ -164,6 +168,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   fab: {
+    backgroundColor: 'blue',
     position: 'absolute',
     margin: 16,
     right: 5,
