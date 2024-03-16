@@ -14,11 +14,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {uuidv4} from '@firebase/util';
 import {useRoute} from '@react-navigation/native';
+import CheckBox from '@react-native-community/checkbox';
 
 const AddTaskScreen = ({navigation}) => {
   const route = useRoute();
-  const {isUpdate, taskId, taskN, taskDesc, taskPrio, taskDueDate} =
+  const {isUpdate, taskId, taskN, taskDesc, taskPrio, taskDueDate, taskCompleted} =
     route.params;
+  const [isChecked, setIsChecked] = useState(false);
   const [taskName, setTaskName] = useState<string>('');
   const [userId, setUserId] = useState('');
   const [taskDescription, setTaskDescription] = useState<string>('');
@@ -38,6 +40,9 @@ const AddTaskScreen = ({navigation}) => {
       }
       if (taskDueDate) {
         setDueDate(new Date(taskDueDate));
+      }
+      if (taskCompleted) {
+        setIsChecked(taskCompleted);
       }
     }
     navigation.setOptions({
@@ -99,6 +104,7 @@ const AddTaskScreen = ({navigation}) => {
           taskDate: dueDate,
           taskDesc: taskDescription,
           taskPriority: taskPriority,
+          taskCompleted: isChecked,
         };
 
         const response = await axios.put(
@@ -120,6 +126,7 @@ const AddTaskScreen = ({navigation}) => {
           taskDate: dueDate,
           taskDesc: taskDescription,
           taskPriority: taskPriority,
+          taskCompleted: false,
         };
 
         const response = await axios.post(
@@ -134,6 +141,10 @@ const AddTaskScreen = ({navigation}) => {
         throw error;
       }
     }
+  };
+
+  const handleToggleCheckbox = () => {
+    setIsChecked(!isChecked);
   };
 
   return (
@@ -176,6 +187,19 @@ const AddTaskScreen = ({navigation}) => {
           setDatePickerVisibility(false);
         }}
       />
+      {isUpdate ? (
+        <View style={styles.checkbox}>
+          <CheckBox
+            style={styles.check}
+            disabled={false}
+            value={isChecked}
+            onValueChange={newValue => setIsChecked(newValue)}
+          />
+          <Text style={styles.label}>Task Completed</Text>
+        </View>
+      ) : (
+        <></>
+      )}
       <TouchableOpacity style={styles.button} onPress={() => handleAddTask()}>
         <Text style={styles.buttonText}>
           {!isUpdate ? 'Add Task' : 'Update Task'}
@@ -223,6 +247,20 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  checkbox: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginVertical: 10,
+  },
+  label: {
+    marginLeft: 10,
+    marginTop: 5,
+  },
+  check: {
+    marginBottom: 5,
+    padding: 5,
   },
 });
 

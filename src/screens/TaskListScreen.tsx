@@ -116,12 +116,18 @@ const TaskListScreen = ({navigation}) => {
             taskDesc: item.taskDesc,
             taskPrio: item.taskPriority,
             taskDueDate: item.taskDate,
+            taskCompleted: item.taskCompleted,
           })
         }>
         <View style={styles.taskItem}>
           <Text style={styles.taskName}>{item.taskName}</Text>
           <Text style={styles.taskName}>{item.taskPriority}</Text>
           <Text style={styles.taskName}>{formatDate(item.taskDate)}</Text>
+          {item.taskCompleted ? (
+            <Text style={styles.taskName}>Task is Completed</Text>
+          ) : (
+            <></>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -139,11 +145,6 @@ const TaskListScreen = ({navigation}) => {
     } else {
       return null;
     }
-  };
-
-  const handleNavigation = () => {
-    setTasksFetched(false);
-    navigation.navigate('AddTask', {isUpdate: false});
   };
 
   return (
@@ -165,7 +166,7 @@ const TaskListScreen = ({navigation}) => {
         icon={({color, size}) => (
           <MaterialIcon name="add" color={color} size={size} />
         )}
-        onPress={() => handleNavigation}
+        onPress={() => navigation.navigate('AddTask', {isUpdate: false})}
       />
     </View>
   );
