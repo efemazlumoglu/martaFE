@@ -176,15 +176,27 @@ const TaskListScreen = ({navigation}) => {
             taskCompleted: item.taskCompleted,
           })
         }>
-        <View style={styles.taskItem}>
-          <Text style={styles.taskName}>{item.taskName}</Text>
-          <Text style={styles.taskName}>{item.taskPriority}</Text>
-          <Text style={styles.taskName}>{formatDate(item.taskDate)}</Text>
-          {item.taskCompleted ? (
-            <Text style={styles.taskName}>Task is Completed</Text>
-          ) : (
-            <></>
-          )}
+        <View
+          style={
+            item.taskCompleted ? styles.taskItemCompleted : styles.taskItem
+          }>
+          <View style={styles.taskFirst}>
+            <View>
+              <Text style={styles.taskName}>{item.taskName}</Text>
+            </View>
+            <View>
+              <Text style={styles.taskPriority}>{item.taskPriority}</Text>
+            </View>
+          </View>
+          <Text style={styles.taskDueDate}>{item.taskDesc}</Text>
+          <View style={styles.taskSecond}>
+            <Text style={styles.taskDueDate}>{formatDate(item.taskDate)}</Text>
+            {item.taskCompleted ? (
+              <Text style={styles.taskDueDate}>Task is Completed</Text>
+            ) : (
+              <></>
+            )}
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -216,14 +228,15 @@ const TaskListScreen = ({navigation}) => {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
         // eslint-disable-next-line react-native/no-inline-styles
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={{flexGrow: 1}}
       />
       <FAB
+        label="Add Task"
+        color="white"
         style={styles.fab}
         // eslint-disable-next-line react/no-unstable-nested-components
-        icon={({color, size}) => (
-          <MaterialIcon name="add" color={color} size={size} />
-        )}
         onPress={() => navigation.navigate('AddTask', {isUpdate: false})}
       />
     </View>
@@ -234,15 +247,54 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
   },
   taskItem: {
-    paddingVertical: 20,
+    paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+    margin: 2,
+    borderRadius: 10,
+    backgroundColor: '#d3d3d3',
+  },
+  taskItemCompleted: {
+    paddingVertical: 5,
+    margin: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    borderRadius: 10,
+    backgroundColor: '#8bca84',
   },
   taskName: {
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: 'bold',
+    padding: 5,
+    marginRight: 5,
+    marginLeft: 5,
+  },
+  taskDueDate: {
+    fontSize: 14,
+    padding: 5,
+    marginRight: 5,
+    marginLeft: 5,
+  },
+  taskPriority: {
+    fontSize: 12,
+    padding: 5,
+    marginRight: 5,
+    marginLeft: 5,
+  },
+  taskFirst: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginVertical: 0,
+    justifyContent: 'space-between',
+  },
+  taskSecond: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginVertical: 10,
+    justifyContent: 'space-between',
   },
   deleteButton: {
     justifyContent: 'center',
