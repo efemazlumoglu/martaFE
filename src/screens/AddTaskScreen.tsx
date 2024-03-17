@@ -9,6 +9,7 @@ import {
   Image,
   ScrollView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import ActionSheet from 'react-native-action-sheet';
 import DatePicker from 'react-native-date-picker';
@@ -41,6 +42,7 @@ const AddTaskScreen = ({navigation}) => {
   const [isDatePickerVisible, setDatePickerVisibility] =
     useState<boolean>(false);
   const [selectedImage, setSelectedImage] = useState('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (isUpdate && taskN) {
@@ -122,6 +124,7 @@ const AddTaskScreen = ({navigation}) => {
   };
 
   const handleAddTask = async () => {
+    setLoading(true);
     const baseURL =
       Platform.OS === 'ios'
         ? 'http://localhost:3000'
@@ -153,9 +156,11 @@ const AddTaskScreen = ({navigation}) => {
         );
         console.log('Task added successfully:', response.data);
         navigation.popToTop();
+        setLoading(false);
         return response.data;
       } catch (error) {
         console.error('Error adding task:', error.message);
+        setLoading(false);
         throw error;
       }
     } else {
@@ -176,9 +181,11 @@ const AddTaskScreen = ({navigation}) => {
         );
         console.log('Task added successfully:', response.data);
         navigation.popToTop();
+        setLoading(false);
         return response.data;
       } catch (error) {
         console.error('Error adding task:', error.message);
+        setLoading(false);
         throw error;
       }
     }
@@ -200,6 +207,7 @@ const AddTaskScreen = ({navigation}) => {
   };
 
   const handleDeleteOperation = async () => {
+    setLoading(true);
     const baseURL =
       Platform.OS === 'ios'
         ? 'http://localhost:3000'
@@ -210,9 +218,11 @@ const AddTaskScreen = ({navigation}) => {
           `${baseURL}/tasks/${userId}/${taskId}`,
         );
         console.log('Task deleted successfully:', response.data);
+        setLoading(false);
         navigation.popToTop();
         return response.data;
       } catch (error) {
+        setLoading(false);
         console.error('Error adding task:', error.message);
         throw error;
       }
@@ -275,85 +285,93 @@ const AddTaskScreen = ({navigation}) => {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.container}>
-        <TextInput
-          placeholder="Enter Task Name"
-          value={taskName}
-          onChangeText={setTaskName}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Enter Task Description"
-          value={taskDescription}
-          onChangeText={setTaskDescription}
-          multiline
-          style={[styles.input, styles.multilineInput]}
-        />
-        <Text>Select a Task Priority</Text>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => showActionSheet()}>
-          <Text>{taskPriority}</Text>
-        </TouchableOpacity>
-        <Text>Select a Due Date</Text>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => setDatePickerVisibility(true)}>
-          <Text>
-            {dueDate ? formatDate(dueDate.getTime()) : 'Pick a Due Date'}
-          </Text>
-        </TouchableOpacity>
-        <DatePicker
-          modal
-          open={isDatePickerVisible}
-          date={dueDate}
-          onConfirm={date => {
-            setDatePickerVisibility(false);
-            setDueDate(date);
-          }}
-          minimumDate={dueDate}
-          onCancel={() => {
-            setDatePickerVisibility(false);
-          }}
-        />
-        {isUpdate ? (
-          <View style={styles.checkbox}>
-            <CheckBox
-              style={styles.check}
-              disabled={false}
-              value={isChecked}
-              onValueChange={handleToggleCheckbox}
-            />
-            <Text style={styles.label}>Task Completed</Text>
-          </View>
-        ) : (
-          <></>
-        )}
-        {selectedImage && (
-          <Image source={{uri: selectedImage}} style={styles.selectedImage} />
-        )}
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => handleSelectImage()}>
-          <Text style={styles.buttonText}>
-            {selectedImage ? 'Change Image' : 'Select Image'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => handleAddTask()}>
-          <Text style={styles.buttonText}>
-            {!isUpdate ? 'Add Task' : 'Update Task'}
-          </Text>
-        </TouchableOpacity>
-        {isUpdate ? (
+      {loading ? ( // Conditionally render loading indicator
+        <View style={[styles.container, styles.loadingContainer]}>
+          <ActivityIndicator size="large" color="#4CAF50" />
+        </View>
+      ) : (
+        <View style={styles.container}>
+          <TextInput
+            placeholder="Enter Task Name"
+            value={taskName}
+            onChangeText={setTaskName}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Enter Task Description"
+            value={taskDescription}
+            onChangeText={setTaskDescription}
+            multiline
+            style={[styles.input, styles.multilineInput]}
+          />
+          <Text>Select a Task Priority</Text>
           <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDeleteTask()}>
-            <Text style={styles.buttonText}>Delete Task</Text>
+            style={styles.input}
+            onPress={() => showActionSheet()}>
+            <Text>{taskPriority}</Text>
           </TouchableOpacity>
-        ) : (
-          <></>
-        )}
-      </View>
+          <Text>Select a Due Date</Text>
+          <TouchableOpacity
+            style={styles.input}
+            onPress={() => setDatePickerVisibility(true)}>
+            <Text>
+              {dueDate ? formatDate(dueDate.getTime()) : 'Pick a Due Date'}
+            </Text>
+          </TouchableOpacity>
+          <DatePicker
+            modal
+            open={isDatePickerVisible}
+            date={dueDate}
+            onConfirm={date => {
+              setDatePickerVisibility(false);
+              setDueDate(date);
+            }}
+            minimumDate={dueDate}
+            onCancel={() => {
+              setDatePickerVisibility(false);
+            }}
+          />
+          {isUpdate ? (
+            <View style={styles.checkbox}>
+              <CheckBox
+                style={styles.check}
+                disabled={false}
+                value={isChecked}
+                onValueChange={handleToggleCheckbox}
+              />
+              <Text style={styles.label}>Task Completed</Text>
+            </View>
+          ) : (
+            <></>
+          )}
+          {selectedImage && (
+            <Image source={{uri: selectedImage}} style={styles.selectedImage} />
+          )}
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleSelectImage()}>
+            <Text style={styles.buttonText}>
+              {selectedImage ? 'Change Image' : 'Select Image'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleAddTask()}>
+            <Text style={styles.buttonText}>
+              {!isUpdate ? 'Add Task' : 'Update Task'}
+            </Text>
+          </TouchableOpacity>
+          {isUpdate ? (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteTask()}>
+              <Text style={styles.buttonText}>Delete Task</Text>
+            </TouchableOpacity>
+          ) : (
+            <></>
+          )}
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -362,6 +380,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
   },
   input: {
     marginBottom: 10,

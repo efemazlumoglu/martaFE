@@ -82,11 +82,13 @@ const TaskListScreen = ({navigation}) => {
         setRefreshing(false);
         setNoTasks(false);
       } else {
+        setTasks([]);
         setNoTasks(true);
         setRefreshing(false);
       }
     } catch (error) {
       Alert.alert('Task fetch failed', error.message);
+      setTasks([]);
       setNoTasks(true);
       setRefreshing(false);
     }

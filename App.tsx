@@ -85,6 +85,20 @@ function App({navigation}): React.JSX.Element {
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen
+              name="TaskList"
+              component={TaskListScreen}
+              options={{
+                title: 'Task List',
+              }}
+            />
+            <Stack.Screen
+              name="AddTask"
+              component={AddTaskScreen}
+              options={{
+                title: 'Add Task',
+              }}
+            />
           </>
         )}
       </Stack.Navigator>
