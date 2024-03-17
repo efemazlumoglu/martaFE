@@ -48,7 +48,7 @@ react-native run-android
 yarn android
 ```
 
-# if you are using Android please search for http://192.168.178.21 and change it to your IP address.
+## if you are using Android please search for http://192.168.178.21 in project folder and change it to your IP address.
 
 ### For iOS
 
