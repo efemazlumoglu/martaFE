@@ -94,7 +94,6 @@ const AddTaskScreen = ({navigation}) => {
   };
 
   const showActionSheet = () => {
-    console.log('hello I am here');
     const options = ['Cancel', 'Low', 'Medium', 'High'];
     const cancelButtonIndex = 0;
 
