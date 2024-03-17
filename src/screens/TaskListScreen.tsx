@@ -7,6 +7,8 @@ import {
   RefreshControl,
   TouchableOpacity,
   Animated,
+  Platform,
+  Alert,
 } from 'react-native';
 import {FAB} from 'react-native-paper';
 import ActionSheet from 'react-native-action-sheet';
@@ -65,7 +67,11 @@ const TaskListScreen = ({navigation}) => {
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/tasks/${userId}`);
+      const baseURL =
+        Platform.OS === 'ios'
+          ? 'http://localhost:3000'
+          : 'http://192.168.178.21:3000';
+      const response = await axios.get(`${baseURL}/tasks/${userId}`);
       const data = response.data;
       if (data) {
         const tasksArray = Object.keys(data).map(key => ({
@@ -80,6 +86,7 @@ const TaskListScreen = ({navigation}) => {
         setRefreshing(false);
       }
     } catch (error) {
+      Alert.alert('Task fetch failed', error.message);
       setNoTasks(true);
       setRefreshing(false);
     }
@@ -258,14 +265,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   taskItem: {
+    marginTop: 5,
     paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     margin: 2,
     borderRadius: 10,
-    backgroundColor: '#d3d3d3',
+    backgroundColor: '#e7e7e7',
   },
   taskItemCompleted: {
+    marginTop: 5,
     paddingVertical: 5,
     margin: 2,
     borderBottomWidth: 1,

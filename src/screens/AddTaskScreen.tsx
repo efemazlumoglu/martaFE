@@ -8,6 +8,7 @@ import {
   Alert,
   Image,
   ScrollView,
+  Platform,
 } from 'react-native';
 import ActionSheet from 'react-native-action-sheet';
 import DatePicker from 'react-native-date-picker';
@@ -85,8 +86,12 @@ const AddTaskScreen = ({navigation}) => {
       taskId: taskId,
       userId: userId,
     };
+    const baseURL =
+      Platform.OS === 'ios'
+        ? 'http://localhost:3000'
+        : 'http://192.168.178.21:3000';
     const response = await axios.get(
-      `http://localhost:3000/tasks/${userId}/${taskId}/image`,
+      `${baseURL}/tasks/${userId}/${taskId}/image`,
       formData,
     );
     // instead of backend I am getting from URI it is not going to work if the item is deleted somehow.
@@ -117,6 +122,10 @@ const AddTaskScreen = ({navigation}) => {
   };
 
   const handleAddTask = async () => {
+    const baseURL =
+      Platform.OS === 'ios'
+        ? 'http://localhost:3000'
+        : 'http://192.168.178.21:3000';
     if (taskName === '' || taskName === null) {
       Alert.alert(
         'Add Task Failed',
@@ -139,7 +148,7 @@ const AddTaskScreen = ({navigation}) => {
         console.log(taskData.taskImage);
 
         const response = await axios.put(
-          `http://localhost:3000/tasks/${userId}/${taskId}`,
+          `${baseURL}/tasks/${userId}/${taskId}`,
           taskData,
         );
         console.log('Task added successfully:', response.data);
@@ -162,7 +171,7 @@ const AddTaskScreen = ({navigation}) => {
         };
 
         const response = await axios.post(
-          `http://localhost:3000/tasks/${userId}`,
+          `${baseURL}/tasks/${userId}`,
           taskData,
         );
         console.log('Task added successfully:', response.data);
@@ -191,10 +200,14 @@ const AddTaskScreen = ({navigation}) => {
   };
 
   const handleDeleteOperation = async () => {
+    const baseURL =
+      Platform.OS === 'ios'
+        ? 'http://localhost:3000'
+        : 'http://192.168.178.21:3000';
     if (isUpdate) {
       try {
         const response = await axios.delete(
-          `http://localhost:3000/tasks/${userId}/${taskId}`,
+          `${baseURL}/tasks/${userId}/${taskId}`,
         );
         console.log('Task deleted successfully:', response.data);
         navigation.popToTop();
