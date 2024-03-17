@@ -14,11 +14,11 @@ import {AuthContext} from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = ({navigation}) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [emailError, setEmailError] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string>('');
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -30,7 +30,6 @@ const Login = ({navigation}) => {
     return emailRegex.test(email);
   };
 
-  const [isLoading, setIsLoading] = useState(false);
   const [errHandler, setErrHandler] = useState({
     isError: false,
     errorMsg: '',
@@ -83,7 +82,6 @@ const Login = ({navigation}) => {
 
     try {
       await signOut(auth);
-      setIsLoading(true);
       setErrHandler({isError: false, errorMsg: ''});
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -91,7 +89,6 @@ const Login = ({navigation}) => {
         password,
       );
       if (userCredential.user) {
-        setIsLoading(false);
         const uid = userCredential.user.uid;
         await AsyncStorage.setItem('uid', uid);
         console.log('User signed in:', uid);
@@ -109,7 +106,6 @@ const Login = ({navigation}) => {
         FIREBASE_ERRORS[err.code as keyof typeof FIREBASE_ERRORS],
       );
     } finally {
-      setIsLoading(false);
     }
   };
 

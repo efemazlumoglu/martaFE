@@ -13,13 +13,13 @@ import {FirebaseError} from 'firebase/app';
 import {AuthContext} from '../context/AuthContext';
 
 const RegisterScreen = ({navigation}) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setConfirmShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setConfirmShowPassword] = useState<boolean>(false);
+  const [emailError, setEmailError] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string>('');
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -35,7 +35,6 @@ const RegisterScreen = ({navigation}) => {
     return emailRegex.test(email);
   };
 
-  const [isLoading, setIsLoading] = useState(false);
   const [errHandler, setErrHandler] = useState({
     isError: false,
     errorMsg: '',
@@ -79,7 +78,6 @@ const RegisterScreen = ({navigation}) => {
 
     try {
       await signOut(auth);
-      setIsLoading(true);
       setErrHandler({isError: false, errorMsg: ''});
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -87,8 +85,6 @@ const RegisterScreen = ({navigation}) => {
         password,
       );
       if (userCredential.user) {
-        console.log(userCredential.user);
-        setIsLoading(false);
         console.log('Register Success');
         Alert.alert('Register Success', 'Please Login');
         navigation.navigate('Login');
@@ -105,7 +101,6 @@ const RegisterScreen = ({navigation}) => {
         FIREBASE_ERRORS[err.code as keyof typeof FIREBASE_ERRORS],
       );
     } finally {
-      setIsLoading(false);
     }
   };
 

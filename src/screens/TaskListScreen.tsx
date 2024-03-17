@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -6,24 +6,22 @@ import {
   StyleSheet,
   RefreshControl,
   TouchableOpacity,
-  Button,
+  Animated,
 } from 'react-native';
 import {FAB} from 'react-native-paper';
 import ActionSheet from 'react-native-action-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import {Swipeable} from 'react-native-gesture-handler';
 import {formatDate} from '../libs/formatDate';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {useFocusEffect} from '@react-navigation/native';
 
 const TaskListScreen = ({navigation}) => {
-  const [userId, setUserId] = useState('');
+  const [userId, setUserId] = useState<string>('');
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [noTasks, setNoTasks] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [tasksFetched, setTasksFetched] = useState(false);
+  const [noTasks, setNoTasks] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [tasksFetched, setTasksFetched] = useState<boolean>(false);
+  const fabOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -66,7 +64,6 @@ const TaskListScreen = ({navigation}) => {
   });
 
   const fetchTasks = async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`http://localhost:3000/tasks/${userId}`);
       const data = response.data;
@@ -78,20 +75,15 @@ const TaskListScreen = ({navigation}) => {
         setTasks(tasksArray);
         setRefreshing(false);
         setNoTasks(false);
-        setLoading(false);
       } else {
-        setLoading(false);
         setNoTasks(true);
         setRefreshing(false);
       }
     } catch (error) {
       setNoTasks(true);
       setRefreshing(false);
-      setLoading(false);
     }
-    setLoading(false);
     setRefreshing(false);
-    setLoading(false);
     setTasksFetched(true);
   };
 
@@ -133,6 +125,16 @@ const TaskListScreen = ({navigation}) => {
     setTasks(sortedTasks);
   };
 
+  const handleScroll = event => {
+    const {y} = event.nativeEvent.contentOffset;
+    const fabOpacityValue = y > 0 ? 0 : 1;
+    Animated.timing(fabOpacity, {
+      toValue: fabOpacityValue,
+      duration: 120,
+      useNativeDriver: true,
+    }).start();
+  };
+
   const showActionSheet = () => {
     const options = ['Priority', 'Completed', 'Due Date'];
     const cancelButtonIndex = options.length;
@@ -151,13 +153,6 @@ const TaskListScreen = ({navigation}) => {
   };
 
   const renderTaskItem = ({item}) => {
-    // const renderRightActions = () => {
-    //   return (
-    //     <TouchableOpacity style={styles.deleteButton}>
-    //       <Text style={styles.deleteButtonText}>Delete</Text>
-    //     </TouchableOpacity>
-    //   );
-    // };
     return (
       <TouchableOpacity
         onPress={() =>
@@ -169,6 +164,7 @@ const TaskListScreen = ({navigation}) => {
             taskPrio: item.taskPriority,
             taskDueDate: item.taskDate,
             taskCompleted: item.taskCompleted,
+            taskImage: item.taskImage,
           })
         }>
         <View
@@ -179,7 +175,7 @@ const TaskListScreen = ({navigation}) => {
             <View>
               <Text style={styles.taskName}>{item.taskName}</Text>
             </View>
-            <View>
+            <View style={styles.priorityView}>
               <Text
                 style={
                   item.taskPriority === 'Low'
@@ -222,7 +218,6 @@ const TaskListScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <Button title="Sort" onPress={showActionSheet} />
       <FlatList
         data={tasks}
         renderItem={renderTaskItem}
@@ -231,17 +226,27 @@ const TaskListScreen = ({navigation}) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         // eslint-disable-next-line react-native/no-inline-styles
         contentContainerStyle={{flexGrow: 1}}
       />
-      <FAB
-        label="Add Task"
-        color="white"
-        style={styles.fab}
-        onPress={() => navigation.navigate('AddTask', {isUpdate: false})}
-      />
+      <Animated.View style={{opacity: fabOpacity}}>
+        <FAB
+          label="Sort"
+          color="white"
+          style={styles.fab2}
+          onPress={showActionSheet}
+        />
+        <FAB
+          label="Add Task"
+          color="white"
+          style={styles.fab}
+          onPress={() => navigation.navigate('AddTask', {isUpdate: false})}
+        />
+      </Animated.View>
     </View>
   );
 };
@@ -274,6 +279,11 @@ const styles = StyleSheet.create({
     padding: 5,
     marginRight: 5,
     marginLeft: 5,
+  },
+  priorityView: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginRight: 5,
   },
   taskDueDate: {
     fontSize: 14,
@@ -346,6 +356,13 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 5,
     bottom: 30,
+  },
+  fab2: {
+    backgroundColor: 'navy',
+    position: 'absolute',
+    margin: 16,
+    right: 5,
+    bottom: 90,
   },
 });
 

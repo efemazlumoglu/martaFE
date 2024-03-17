@@ -6,6 +6,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Image,
+  ScrollView,
 } from 'react-native';
 import ActionSheet from 'react-native-action-sheet';
 import DatePicker from 'react-native-date-picker';
@@ -15,6 +17,7 @@ import axios from 'axios';
 import {uuidv4} from '@firebase/util';
 import {useRoute} from '@react-navigation/native';
 import CheckBox from '@react-native-community/checkbox';
+import * as ImagePicker from 'react-native-image-picker';
 
 const AddTaskScreen = ({navigation}) => {
   const route = useRoute();
@@ -26,15 +29,17 @@ const AddTaskScreen = ({navigation}) => {
     taskPrio,
     taskDueDate,
     taskCompleted,
+    taskImage,
   } = route.params;
   const [isChecked, setIsChecked] = useState(false);
   const [taskName, setTaskName] = useState<string>('');
-  const [userId, setUserId] = useState('');
+  const [userId, setUserId] = useState<string>('');
   const [taskDescription, setTaskDescription] = useState<string>('');
   const [taskPriority, setTaskPriority] = useState<string>('Low');
   const [dueDate, setDueDate] = useState<Date | null>(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] =
     useState<boolean>(false);
+  const [selectedImage, setSelectedImage] = useState('');
 
   useEffect(() => {
     if (isUpdate && taskN) {
@@ -50,6 +55,10 @@ const AddTaskScreen = ({navigation}) => {
       }
       if (taskCompleted) {
         setIsChecked(taskCompleted);
+      }
+      if (taskImage) {
+        setSelectedImage(taskImage);
+        getDownloadURL();
       }
     }
     navigation.setOptions({
@@ -70,6 +79,19 @@ const AddTaskScreen = ({navigation}) => {
 
     fetchUserId();
   }, []);
+
+  const getDownloadURL = async () => {
+    const formData = {
+      taskId: taskId,
+      userId: userId,
+    };
+    const response = await axios.get(
+      `http://localhost:3000/tasks/${userId}/${taskId}/image`,
+      formData,
+    );
+    // instead of backend I am getting from URI it is not going to work if the item is deleted somehow.
+    const data = response.data;
+  };
 
   const showActionSheet = () => {
     console.log('hello I am here');
@@ -111,8 +133,11 @@ const AddTaskScreen = ({navigation}) => {
           taskDate: dueDate,
           taskDesc: taskDescription,
           taskPriority: taskPriority,
+          taskImage: selectedImage,
           taskCompleted: isChecked,
         };
+
+        console.log(taskData.taskImage);
 
         const response = await axios.put(
           `http://localhost:3000/tasks/${userId}/${taskId}`,
@@ -133,6 +158,7 @@ const AddTaskScreen = ({navigation}) => {
           taskDate: dueDate,
           taskDesc: taskDescription,
           taskPriority: taskPriority,
+          taskImage: selectedImage,
           taskCompleted: false,
         };
 
@@ -181,81 +207,149 @@ const AddTaskScreen = ({navigation}) => {
     }
   };
 
+  const handleSelectImage = () => {
+    const options = ['Cancel', 'Photo Library', 'Camera'];
+    const cancelButtonIndex = 0;
+
+    ActionSheet.showActionSheetWithOptions(
+      {
+        options,
+        cancelButtonIndex,
+        title: 'Select an Option',
+      },
+      buttonIndex => {
+        if (buttonIndex !== cancelButtonIndex) {
+          const optionSelected = options[buttonIndex];
+          handleImageSelection(optionSelected);
+        }
+      },
+    );
+  };
+
+  const handleImageSelection = index => {
+    if (index === 1) {
+      const options: ImagePicker.CameraOptions = {
+        durationLimit: 20,
+        saveToPhotos: true,
+        cameraType: 'back',
+        mediaType: 'mixed',
+      };
+
+      ImagePicker.launchCamera(options, response => {
+        if (response.didCancel) {
+          //
+        } else if (response.error) {
+          //
+        } else {
+          setSelectedImage(response.uri);
+        }
+      });
+    } else {
+      const options: ImagePicker.ImageLibraryOptions = {
+        mediaType: 'mixed',
+      };
+      ImagePicker.launchImageLibrary(options, response => {
+        if (response.didCancel) {
+          //
+        } else if (response.error) {
+          //
+        } else {
+          console.log(response.uri);
+          setSelectedImage(response.assets[0].uri);
+        }
+      });
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <TextInput
-        placeholder="Enter Task Name"
-        value={taskName}
-        onChangeText={setTaskName}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Enter Task Description"
-        value={taskDescription}
-        onChangeText={setTaskDescription}
-        multiline
-        style={[styles.input, styles.multilineInput]}
-      />
-      <Text>Select a Task Priority</Text>
-      <TouchableOpacity style={styles.input} onPress={() => showActionSheet()}>
-        <Text>{taskPriority}</Text>
-      </TouchableOpacity>
-      <Text>Select a Due Date</Text>
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setDatePickerVisibility(true)}>
-        <Text>
-          {dueDate ? formatDate(dueDate.getTime()) : 'Pick a Due Date'}
-        </Text>
-      </TouchableOpacity>
-      <DatePicker
-        modal
-        open={isDatePickerVisible}
-        date={dueDate}
-        onConfirm={date => {
-          setDatePickerVisibility(false);
-          setDueDate(date);
-        }}
-        minimumDate={dueDate}
-        onCancel={() => {
-          setDatePickerVisibility(false);
-        }}
-      />
-      {isUpdate ? (
-        <View style={styles.checkbox}>
-          <CheckBox
-            style={styles.check}
-            disabled={false}
-            value={isChecked}
-            onValueChange={handleToggleCheckbox}
-          />
-          <Text style={styles.label}>Task Completed</Text>
-        </View>
-      ) : (
-        <></>
-      )}
-      <TouchableOpacity style={styles.button} onPress={() => handleAddTask()}>
-        <Text style={styles.buttonText}>
-          {!isUpdate ? 'Add Task' : 'Update Task'}
-        </Text>
-      </TouchableOpacity>
-      {isUpdate ? (
+    <ScrollView style={styles.container}>
+      <View style={styles.container}>
+        <TextInput
+          placeholder="Enter Task Name"
+          value={taskName}
+          onChangeText={setTaskName}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Enter Task Description"
+          value={taskDescription}
+          onChangeText={setTaskDescription}
+          multiline
+          style={[styles.input, styles.multilineInput]}
+        />
+        <Text>Select a Task Priority</Text>
         <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDeleteTask()}>
-          <Text style={styles.buttonText}>Delete Task</Text>
+          style={styles.input}
+          onPress={() => showActionSheet()}>
+          <Text>{taskPriority}</Text>
         </TouchableOpacity>
-      ) : (
-        <></>
-      )}
-    </View>
+        <Text>Select a Due Date</Text>
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => setDatePickerVisibility(true)}>
+          <Text>
+            {dueDate ? formatDate(dueDate.getTime()) : 'Pick a Due Date'}
+          </Text>
+        </TouchableOpacity>
+        <DatePicker
+          modal
+          open={isDatePickerVisible}
+          date={dueDate}
+          onConfirm={date => {
+            setDatePickerVisibility(false);
+            setDueDate(date);
+          }}
+          minimumDate={dueDate}
+          onCancel={() => {
+            setDatePickerVisibility(false);
+          }}
+        />
+        {isUpdate ? (
+          <View style={styles.checkbox}>
+            <CheckBox
+              style={styles.check}
+              disabled={false}
+              value={isChecked}
+              onValueChange={handleToggleCheckbox}
+            />
+            <Text style={styles.label}>Task Completed</Text>
+          </View>
+        ) : (
+          <></>
+        )}
+        {selectedImage && (
+          <Image source={{uri: selectedImage}} style={styles.selectedImage} />
+        )}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => handleSelectImage()}>
+          <Text style={styles.buttonText}>
+            {selectedImage ? 'Change Image' : 'Select Image'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => handleAddTask()}>
+          <Text style={styles.buttonText}>
+            {!isUpdate ? 'Add Task' : 'Update Task'}
+          </Text>
+        </TouchableOpacity>
+        {isUpdate ? (
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeleteTask()}>
+            <Text style={styles.buttonText}>Delete Task</Text>
+          </TouchableOpacity>
+        ) : (
+          <></>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 10,
   },
   input: {
     marginBottom: 10,
@@ -281,9 +375,16 @@ const styles = StyleSheet.create({
   calendarIcon: {
     marginLeft: 10,
   },
+  selectedImage: {
+    width: 120,
+    height: 120,
+    marginTop: 10,
+    borderRadius: 10,
+  },
   button: {
     backgroundColor: '#4CAF50',
     paddingVertical: 12,
+    marginTop: 10,
     borderRadius: 5,
     alignItems: 'center',
   },

@@ -6,15 +6,15 @@
  */
 
 import React, {useContext, useEffect, useState} from 'react';
-import {AuthContext} from './src/context/AuthContext';
+import {Alert, View, Text} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import TaskListScreen from './src/screens/TaskListScreen';
-import {Text, TouchableOpacity} from 'react-native';
 import AddTaskScreen from './src/screens/AddTaskScreen';
+import NetInfo from '@react-native-community/netinfo';
 
 function App({navigation}): React.JSX.Element {
   const [user, setUser] = useState(false);
@@ -37,10 +37,30 @@ function App({navigation}): React.JSX.Element {
     getItemFromStorage();
   });
 
-  const {currentUser} = useContext(AuthContext);
+  const [isConnected, setIsConnected] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isConnected) {
+      Alert.alert(
+        'No Internet Connection',
+        'Please check your internet connection and try again.',
+        [{text: 'OK'}],
+        {cancelable: false},
+      );
+    }
+  }, [isConnected]);
+
   const Stack = createNativeStackNavigator();
-  console.log('current user: ', currentUser);
-  console.log(user);
   return (
     <NavigationContainer>
       <Stack.Navigator>
