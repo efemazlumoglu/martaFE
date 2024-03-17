@@ -104,32 +104,27 @@ const TaskListScreen = ({navigation}) => {
     let sortedTasks = [...tasks];
     switch (index) {
       case 0:
+        const priorityOrder = {High: 0, Medium: 1, Low: 2};
         sortedTasks.sort((a, b) => {
-          if (a.taskPriority < b.taskPriority) {
-            return -1;
-          }
-          if (a.taskPriority > b.taskPriority) {
-            return 1;
-          }
-          return 0;
+          return priorityOrder[a.taskPriority] - priorityOrder[b.taskPriority];
         });
         break;
       case 1:
         sortedTasks.sort((a, b) => {
-          if (a.taskCompleted && !b.taskCompleted) {
-            return 1;
+          if (a.taskCompleted !== b.taskCompleted) {
+            return a.taskCompleted ? -1 : 1;
           }
-          if (!a.taskCompleted && b.taskCompleted) {
-            return -1;
-          }
-          return 0;
         });
         break;
       case 2:
         sortedTasks.sort((a, b) => {
           const dateA = new Date(a.taskDate);
           const dateB = new Date(b.taskDate);
-          return dateA - dateB;
+          const currentDate = new Date().getTime();
+          return (
+            Math.abs(dateA.getTime() - currentDate) -
+            Math.abs(dateB.getTime() - currentDate)
+          );
         });
         break;
       default:
@@ -185,7 +180,16 @@ const TaskListScreen = ({navigation}) => {
               <Text style={styles.taskName}>{item.taskName}</Text>
             </View>
             <View>
-              <Text style={styles.taskPriority}>{item.taskPriority}</Text>
+              <Text
+                style={
+                  item.taskPriority === 'Low'
+                    ? styles.taskPriorityLow
+                    : item.taskPriority === 'Medium'
+                    ? styles.taskPriorityMedium
+                    : styles.taskPriorityHigh
+                }>
+                {item.taskPriority}
+              </Text>
             </View>
           </View>
           <Text style={styles.taskDueDate}>{item.taskDesc}</Text>
@@ -227,16 +231,15 @@ const TaskListScreen = ({navigation}) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
-        // eslint-disable-next-line react-native/no-inline-styles
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
+        // eslint-disable-next-line react-native/no-inline-styles
         contentContainerStyle={{flexGrow: 1}}
       />
       <FAB
         label="Add Task"
         color="white"
         style={styles.fab}
-        // eslint-disable-next-line react/no-unstable-nested-components
         onPress={() => navigation.navigate('AddTask', {isUpdate: false})}
       />
     </View>
@@ -278,11 +281,29 @@ const styles = StyleSheet.create({
     marginRight: 5,
     marginLeft: 5,
   },
-  taskPriority: {
+  taskPriorityLow: {
+    color: '#ffc100',
     fontSize: 12,
     padding: 5,
     marginRight: 5,
     marginLeft: 5,
+    fontWeight: '800',
+  },
+  taskPriorityMedium: {
+    color: '#ff7400',
+    fontSize: 12,
+    padding: 5,
+    marginRight: 5,
+    marginLeft: 5,
+    fontWeight: '800',
+  },
+  taskPriorityHigh: {
+    color: '#ff0000',
+    fontSize: 12,
+    padding: 5,
+    marginRight: 5,
+    marginLeft: 5,
+    fontWeight: '800',
   },
   taskFirst: {
     display: 'flex',
