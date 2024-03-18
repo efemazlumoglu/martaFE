@@ -84,20 +84,20 @@ const AddTaskScreen = ({navigation}) => {
   }, []);
 
   const getDownloadURL = async () => {
-    const formData = {
-      taskId: taskId,
-      userId: userId,
-    };
-    const baseURL =
-      Platform.OS === 'ios'
-        ? 'http://localhost:3000'
-        : 'http://192.168.178.21:3000';
-    const response = await axios.get(
-      `${baseURL}/tasks/${userId}/${taskId}/image`,
-      formData,
-    );
-    // instead of backend I am getting from URI it is not going to work if the item is deleted somehow.
-    const data = response.data;
+    // // instead of backend I am getting from URI it is not going to work if the item is deleted somehow.
+    // const formData = {
+    //   taskId: taskId,
+    //   userId: userId,
+    // };
+    // const baseURL =
+    //   Platform.OS === 'ios'
+    //     ? 'http://localhost:3000'
+    //     : 'http://192.168.178.21:3000';
+    // const response = await axios.get(
+    //   `${baseURL}/tasks/${userId}/${taskId}/image`,
+    //   formData,
+    // );
+    // const data = response.data;
   };
 
   const showActionSheet = () => {

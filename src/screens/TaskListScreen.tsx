@@ -78,9 +78,15 @@ const TaskListScreen = ({navigation}) => {
           ...data[key],
           taskId: key,
         }));
-        setTasks(tasksArray);
-        setRefreshing(false);
-        setNoTasks(false);
+        if (tasksArray.length > 0) {
+          setTasks(tasksArray);
+          setRefreshing(false);
+          setNoTasks(false);
+        } else {
+          setTasks(tasksArray);
+          setRefreshing(false);
+          setNoTasks(true);
+        }
       } else {
         setTasks([]);
         setNoTasks(true);
